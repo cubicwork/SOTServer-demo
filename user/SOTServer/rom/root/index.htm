@@ -1,0 +1,68 @@
+<html>
+<head>
+<title>controller demo</title>
+</head>
+<body>
+<button id="control-0"></button>
+<button id="control-1"></button>
+<button id="control-2"></button>
+<button id="control-3"></button>
+<div id="status">getting status ...</div>
+<script type="text/javascript">
+document.addEventListener("click", setStatus);
+var currentStatus = [0, 0, 0, 0];
+getStatus();
+
+function setStatus(e) {
+  var target = e.target;
+  var id = target.getAttribute("id");
+  if(id.match("control")) {
+    makeControl(id.replace("control-",""));
+  }
+}
+
+function getStatus() {
+  makeRequest("get", "a");
+}
+
+function makeControl(funID) {
+  if(currentStatus[funID] == "1") {
+    makeRequest("clr", funID);
+  } else {
+    makeRequest("set", funID);
+  }
+}
+
+function setBtnLabel() {
+  for( var index in currentStatus) {
+    if(currentStatus[index] == "1") {
+      document.getElementById("control-" + index).innerHTML = "On";
+    } else {
+      document.getElementById("control-" + index).innerHTML = "Off";
+    }
+  }
+}
+
+function makeRequest(option, funID) {
+  document.getElementById("status").innerHTML = "Connecting...";
+  var request = new XMLHttpRequest();
+  request.open("GET", "/cgi/fun/" + option + "/" + funID + "/", true);
+  request.onreadystatechange = function(){
+    if(request.readyState == 4) {
+      if (request.status == 200) {
+        var text = request.responseText;
+        currentStatus = text.split("");
+        setBtnLabel();
+        document.getElementById("status").innerHTML = "Done!";
+      } else {
+        document.getElementById("status").innerHTML = "Server Error!";
+      }
+    } else {
+      document.getElementById("status").innerHTML = "Connecting...";
+    }
+  }
+  request.send(null);
+}
+</script>
+</body>
+</html>
